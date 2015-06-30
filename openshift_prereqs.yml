@@ -1,18 +1,17 @@
 ---
 - hosts: openshift_nodes
   vars:
-    rhn_user: rhn-gps-juhoffma
-    rhn_pass: Nq4=E6sR/ZTRNH
-  remote_user: ec2-user
-  sudo: yes
+    rhn_user: "{{ lookup('env','RHN_USER') }}"
+    rhn_pass: "{{ lookup('env','RHN_PASS') }}"
+    installer_cfg: "{{ inventory_dir }}/installer.cfg.yml"
+    example_hosts: "{{ inventory_dir }}/example_hosts"
+    ssh_key_private: "{{ inventory_dir }}/openshift_aws"
+    ssh_key_public: "{{ inventory_dir }}/openshift_aws.pub"
+    ose_installer: "{{ inventory_dir }}/oo-install-ose.tgz"
+    ansible_user: "{{ lookup('env','ANSIBLE_USER') }}"
+  remote_user: "{{ ansible_user }}"
+  sudo: "{{ lookup('env','ANSIBLE_SUDO') }}"
   tasks:
-#  - name: Deregister System, so we can get a clean state
-#    redhat_subscription: state=absent
-#  - name: Register with RHSM
-#    redhat_subscription: state=present
-#                         username={{ rhn_user }}
-#                         password={{ rhn_pass }}
-#                         pool=8a85f9843e3d687a013e3ddd471a083e
   - name: Register System with RHN
     command: subscription-manager register --username={{ rhn_user }} --password="{{ rhn_pass }}" --force
   - name: Attach to the correct pool
@@ -52,18 +51,18 @@
   - command: docker pull registry.access.redhat.com/jboss-eap-6/eap-openshift
   - command: docker pull openshift/hello-openshift
   - name: Copy authorized_key to systems
-    authorized_key: user=ec2-user key="{{ lookup('file', '/Users/buddy/openshift_aws.pub') }}"
+    authorized_key: user={{ ansible_user }} key="{{ ssh_key_public }}"
 
 ## Now let us do the work specific to the master
 - hosts: openshift_master
-  remote_user: ec2-user
-  sudo: yes
+  remote_user: "{{ ansible_user }}"
+  sudo: "{{ lookup('env','ANSIBLE_SUDO') }}"
   tasks:
-  - copy: src=/Users/buddy/openshift_aws dest=/root/.ssh/id_rsa owner=root group=root mode=0400
-  - copy: src=/Users/buddy/openshift_aws.pub dest=/root/.ssh/id_rsa.pub owner=root group=root mode=0400
-  - copy: src=/Users/buddy/oo-install-ose.tgz dest=/root/oo-install-ose.tgz owner=root mode=0600
+  - copy: src={{ ssh_key_private }} dest=/root/.ssh/id_rsa owner=root group=root mode=0400
+  - copy: src={{ ssh_key_public }} dest=/root/.ssh/id_rsa.pub owner=root group=root mode=0400
+  - copy: src={{ ose_installer }} dest=/root/oo-install-ose.tgz owner=root mode=0600
   - file: path=/root/.config state=directory
   - file: path=/root/.config/openshift state=directory
   - file: path=/root/.config/openshift/.ansible state=directory
-  - copy: src=/Users/buddy/installer.cfg.yml dest=/root/.config/openshift/installer.cfg.yml owner=root mode=0644
-  - copy: src=/Users/buddy/example_hosts dest=/root/.config/openshift/.ansible/hosts owner=root mode=0644
+  - copy: src={{ installer_cfg }} dest=/root/.config/openshift/installer.cfg.yml owner=root mode=0644
+  - copy: src={{ example_hosts }} dest=/root/.config/openshift/.ansible/hosts owner=root mode=0644

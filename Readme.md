@@ -37,3 +37,17 @@ export RHN_PASS=<your RHN Password>
 export ANSIBLE_USER=<username used to connect to remote systems>
 export ANSIBLE_SUDO=<Whether the user should use sudo>
 ```
+
+you can use the `env.example` file for your convenience to prepare your environment.
+
+```
+mv env.example env
+vi env # edit the file and add the appropriate values
+source env
+```
+
+to run the installer run the following command:
+
+```
+ansible-playbook -i ./ansible-inventory ./openshift_prereqs.yml
+```

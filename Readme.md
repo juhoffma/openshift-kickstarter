@@ -49,5 +49,5 @@ source env
 to run the installer run the following command:
 
 ```
-ansible-playbook -i ./ansible-inventory ./openshift_prereqs.yml
+ansible-playbook -i ./ansible_inventory ./openshift_prereqs.yml
 ```

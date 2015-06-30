@@ -55,6 +55,15 @@
 
 ## Now let us do the work specific to the master
 - hosts: openshift_master
+  vars:
+    rhn_user: "{{ lookup('env','RHN_USER') }}"
+    rhn_pass: "{{ lookup('env','RHN_PASS') }}"
+    installer_cfg: "{{ inventory_dir }}/installer.cfg.yml"
+    example_hosts: "{{ inventory_dir }}/example_hosts"
+    ssh_key_private: "{{ inventory_dir }}/openshift_aws"
+    ssh_key_public: "{{ inventory_dir }}/openshift_aws.pub"
+    ose_installer: "{{ inventory_dir }}/oo-install-ose.tgz"
+    ansible_user: "{{ lookup('env','ANSIBLE_USER') }}"
   remote_user: "{{ ansible_user }}"
   sudo: "{{ lookup('env','ANSIBLE_SUDO') }}"
   tasks:

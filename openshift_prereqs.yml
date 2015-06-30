@@ -51,7 +51,7 @@
   - command: docker pull registry.access.redhat.com/jboss-eap-6/eap-openshift
   - command: docker pull openshift/hello-openshift
   - name: Copy authorized_key to systems
-    authorized_key: user={{ ansible_user }} key="{{lookup('file', {{ ssh_key_public }}) }}"
+    authorized_key: user={{ ansible_user }} key="{{lookup('file', ssh_key_public) }}"
 
 ## Now let us do the work specific to the master
 - hosts: openshift_master

@@ -1,0 +1,69 @@
+---
+- hosts: openshift_nodes
+  vars:
+    rhn_user: rhn-gps-juhoffma
+    rhn_pass: Nq4=E6sR/ZTRNH
+  remote_user: ec2-user
+  sudo: yes
+  tasks:
+#  - name: Deregister System, so we can get a clean state
+#    redhat_subscription: state=absent
+#  - name: Register with RHSM
+#    redhat_subscription: state=present
+#                         username={{ rhn_user }}
+#                         password={{ rhn_pass }}
+#                         pool=8a85f9843e3d687a013e3ddd471a083e
+  - name: Register System with RHN
+    command: subscription-manager register --username={{ rhn_user }} --password="{{ rhn_pass }}" --force
+  - name: Attach to the correct pool
+    command: subscription-manager attach --pool=8a85f9843e3d687a013e3ddd471a083e
+  - name: Disable all Repositories
+    command: subscription-manager repos --disable="*"
+  - name: Enable all OpenShift Dependencies
+    command: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="rhel-7-server-ose-3.0-rpms"
+  - name: Install deltarpm
+    yum: name=deltarpm state=present
+  - name: Remove Network Manager
+    yum: name="NetworkManager-adsl,NetworkManager-bluetooth,NetworkManager-config-routing-rules,NetworkManager-config-server,NetworkManager-devel,NetworkManager-glib,NetworkManager-glib-devel,NetworkManager-libnm,NetworkManager-libnm-devel,NetworkManager-libreswan,NetworkManager-libreswan-gnome,NetworkManager-team,NetworkManager-tui,NetworkManager-wifi,NetworkManager-wwan,NetworkManager" state=absent
+  - name: Install basic packages
+    yum: name="wget,git,net-tools,bind-utils,iptables-services,bridge-utils,vim,python-virtualenv,gcc" state=present
+  - name: Update the Base System
+    yum: name=* state=latest
+  - name: Install Docker
+    yum: name=docker state=present
+  - name: Enable insecure Registries
+    command: sed -i -e "s|^OPTIONS='--selinux-enabled'|OPTIONS='--selinux-enabled --insecure-registry 0.0.0.0/0'|" /etc/sysconfig/docker
+  - name: Remove any docker leftovers
+    command: rm -rf /var/lib/docker/*
+  - name: Start the Docker Service
+    service: name=docker state=restarted
+  - command: docker pull registry.access.redhat.com/openshift3/ose-haproxy-router
+  - command: docker pull registry.access.redhat.com/openshift3/ose-deployer
+  - command: docker pull registry.access.redhat.com/openshift3/ose-sti-builder
+  - command: docker pull registry.access.redhat.com/openshift3/ose-sti-image-builder
+  - command: docker pull registry.access.redhat.com/openshift3/ose-docker-builder
+  - command: docker pull registry.access.redhat.com/openshift3/ose-pod
+  - command: docker pull registry.access.redhat.com/openshift3/ose-docker-registry
+# - command: docker pull registry.access.redhat.com/openshift3/sti-basicauthurl
+  - command: docker pull registry.access.redhat.com/openshift3/ose-keepalived-ipfailover
+  - command: docker pull registry.access.redhat.com/openshift3/ruby-20-rhel7
+  - command: docker pull registry.access.redhat.com/openshift3/mysql-55-rhel7
+  - command: docker pull registry.access.redhat.com/openshift3/php-55-rhel7
+  - command: docker pull registry.access.redhat.com/jboss-eap-6/eap-openshift
+  - command: docker pull openshift/hello-openshift
+  - name: Copy authorized_key to systems
+    authorized_key: user=ec2-user key="{{ lookup('file', '/Users/buddy/openshift_aws.pub') }}"
+
+## Now let us do the work specific to the master
+- hosts: openshift_master
+  remote_user: ec2-user
+  sudo: yes
+  tasks:
+  - copy: src=/Users/buddy/openshift_aws dest=/root/.ssh/id_rsa owner=root group=root mode=0400
+  - copy: src=/Users/buddy/openshift_aws.pub dest=/root/.ssh/id_rsa.pub owner=root group=root mode=0400
+  - copy: src=/Users/buddy/oo-install-ose.tgz dest=/root/oo-install-ose.tgz owner=root mode=0600
+  - file: path=/root/.config state=directory
+  - file: path=/root/.config/openshift state=directory
+  - file: path=/root/.config/openshift/.ansible state=directory
+  - copy: src=/Users/buddy/installer.cfg.yml dest=/root/.config/openshift/installer.cfg.yml owner=root mode=0644
+  - copy: src=/Users/buddy/example_hosts dest=/root/.config/openshift/.ansible/hosts owner=root mode=0644

@@ -1,0 +1,8 @@
+
+[openshift_nodes]
+openshift-master.openshift.me
+openshift-node1.openshift.me
+openshift-node2.openshift.me
+
+[openshift_master]
+openshift-master.openshift.me

@@ -1,0 +1,12 @@
+Description: This is the configuration file for the OpenShift Ansible-Based Installer.
+Name: OpenShift Ansible-Based Installer Configuration
+Subscription: {type: none}
+Vendor: OpenShift Community
+Version: 0.0.1
+ansible_config: /tmp/oo-install-ose-20150629-1944/lib/python2.7/site-packages/ooinstall/ansible.cfg
+ansible_inventory_directory: /root/.config/openshift/.ansible
+ansible_log_path: /tmp/oo-install-ose-20150629-1944.log
+ansible_plugins_directory: /tmp/oo-install-ose-20150629-1944/lib/python2.7/site-packages/ooinstall/ansible_plugins
+ansible_ssh_user: ec2-user
+masters: [openshift-master.openshift.me]
+nodes: [openshift-node1.openshift.me, openshift-node2.openshift.me, openshift-master.openshift.me]

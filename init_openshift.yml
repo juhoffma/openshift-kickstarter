@@ -1,0 +1,10 @@
+- hosts: openshift_master
+  remote_user: ec2-user
+  sudo: yes
+  tasks:
+  - name: Creates persistent storage directory for docker images
+    file: path=/opt/images state=directory
+  - name: Deploy the OpenShift Internal Docker Registry
+    command: oadm registry --config=/etc/openshift/master/admin.kubeconfig --credentials=/etc/openshift/master/openshift-registry.kubeconfig --mount-host=/opt/images
+  - name: Create The Service Account for the Registry
+    command: echo '{"kind":"ServiceAccount","apiVersion":"v1","metadata":{"name":"registry"}}' | oc create -f -

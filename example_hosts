@@ -1,0 +1,17 @@
+
+[OSEv3:children]
+masters
+nodes
+
+[OSEv3:vars]
+ansible_ssh_user=ec2-user
+ansible_sudo=true
+deployment_type=enterprise
+
+[masters]
+openshift-master.openshift.me
+
+[nodes]
+openshift-node1.openshift.me
+openshift-node2.openshift.me
+openshift-master.openshift.me

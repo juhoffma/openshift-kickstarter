@@ -25,7 +25,7 @@
   - name: Remove Network Manager
     yum: name="NetworkManager-adsl,NetworkManager-bluetooth,NetworkManager-config-routing-rules,NetworkManager-config-server,NetworkManager-devel,NetworkManager-glib,NetworkManager-glib-devel,NetworkManager-libnm,NetworkManager-libnm-devel,NetworkManager-libreswan,NetworkManager-libreswan-gnome,NetworkManager-team,NetworkManager-tui,NetworkManager-wifi,NetworkManager-wwan,NetworkManager" state=absent
   - name: Install basic packages
-    yum: name="wget,git,net-tools,bind-utils,iptables-services,bridge-utils,vim,python-virtualenv,gcc" state=present
+    yum: name="wget,git,net-tools,bind-utils,iptables-services,bridge-utils,vim,python-virtualenv,gcc,httpd-tools" state=present
   - name: Update the Base System
     yum: name=* state=latest
   - name: Install Docker
